@@ -1,0 +1,98 @@
+spring:
+  main:
+    allow-circular-references: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jpa:
+    open-in-view: false
+    hibernate:
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+      ddl-auto: update
+      generate-ddl: true
+    show-sql: 'true'
+  application:
+    name: core
+  r2dbc:
+    url: ${POSTGRES_URL:r2dbc:postgresql://localhost:5555/core?currentSchema=core}
+    username: ${POSTGRES_USER:coreuser}
+    password: ${POSTGRES_PASS:corepwd}
+  datasource:
+    testWhileIdle: 'true'
+    validationQuery: SELECT 1
+    initialization-mode: always
+    platform: postgres
+    continue-on-error: true
+    schema: classpath*:db/postgres/schema.sql
+    data: classpath*:db/postgres/data.sql
+  jackson:
+    serialization:
+      INDENT_OUTPUT: 'true'
+server:
+  error:
+    whitelabel:
+      enabled: true
+  servlet:
+    context-path: /core
+  tomcat:
+    accesslog:
+      enabled: 'true'
+    min-spare-threads: '10'
+    background-processor-delay: '1'
+    max-threads: '20'
+  port: '11000'
+rest:
+  security:
+    enabled: 'true'
+    api-matcher: /**/**
+    cors:
+      allowed-headers: '*'
+      allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      allowed-origins: '*'
+      max-age: '3600'
+    issuer-uri: http://localhost:11000/auth/realms/fencedev
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      user-authorization-uri: ${rest.security.issuer-uri}/protocol/openid-connect/auth
+      client-secret: 8c90aeff-dc93-4336-853e-de8587e31fb5
+      client-id: core
+      # grant-type: client_credentials
+      access-token-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token
+      scope: openid
+    resource:
+      user-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/userinfo
+      token-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token/introspect
+      jwt:
+        key-value: |-
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsy9rY8/4mZ1ubHkcGhtre/K2n1zetkR3vGZBjyLlClyS6hEcZVR8UfK4pnSRdxIXr+rXUK98yvIVnc9j+EwQGSYwiajFHUblRAg/tYdXgziGxIs30V4VT/hxgNIrACMpTGa1EtJVBBfE6ouMCumqf+mJpe0a+pVhldGIxelSvekYlQjqyLwGQjYycG6lNImNmgMLatfG+HxjDUIm2V9LMDi7tRFwHCRj/zTIogDCceFDvMvetkjMrK7tlQhCbCY9MCkmcDBsJswTXO+VLD8c4xH9z5TUSGV33MyuZTA1zhXiq8lElQKBCA/td18/rcVtslIJ9y987myXFg1J8DDhVwIDAQAB
+          -----END PUBLIC KEY-----
+      id: core
+# Comment the below for docker images and containers
+logging:
+  file: logs/core-app.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework: INFO
+    org.tm.api: INFO
+    org.hibernate: INFO
+    springfox.documentation: WARN
+  root: INFO
+springdoc:
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    disable-swagger-default-url: false
+    enabled: true
+    path: /swagger.html
+    operationSorter: method
+    swagger: 3.0

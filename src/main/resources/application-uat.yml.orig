@@ -1,0 +1,101 @@
+spring:
+  main:
+    allow-circular-references: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+      ddl-auto: update
+      generate-ddl: true
+    show-sql: 'false'
+  application:
+    name: core
+  datasource:
+    testWhileIdle: 'true'
+    password: ${MYSQL_PWD:corepwd}
+    username: ${MYSQL_USER:coreuser}
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3316/core?allowPublicKeyRetrieval=true&useSSL=false}
+    driverClassName : com.mysql.cj.jdbc.Driver
+    validationQuery: SELECT 1
+    initialization-mode: always
+    platform: mysql
+    continue-on-error: true
+    schema: classpath*:db/mysql/schema.sql
+    data: classpath*:db/mysql/data.sql
+  jackson:
+    serialization:
+      INDENT_OUTPUT: 'true'
+server:
+  error:
+    whitelabel:
+      enabled: true
+  servlet:
+    context-path: /core
+  tomcat:
+    accesslog:
+      enabled: 'true'
+    min-spare-threads: '10'
+    background-processor-delay: '1'
+    max-threads: '20'
+  port: '11002'
+rest:
+  security:
+    enabled: 'true'
+    api-matcher: /api/**
+    cors:
+      allowed-headers: '*'
+      allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+      allowed-origins: '*'
+      max-age: '3600'
+    issuer-uri: https://uat.api.tm.org/auth/realms/fencedev
+security:
+  basic:
+    enabled: true
+  oauth2:
+    client:
+      user-authorization-uri: ${rest.security.issuer-uri}/protocol/openid-connect/auth
+      client-secret: replace-with-original-secret
+      client-id: core-rest-client
+      # grant-type: client_credentials
+      access-token-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token
+      scope: openid
+    resource:
+      user-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/userinfo
+      token-info-uri: ${rest.security.issuer-uri}/protocol/openid-connect/token/introspect
+      jwt:
+        key-value: |-
+          -----BEGIN PUBLIC KEY-----
+          REPlaceWithRealPublicKey
+          -----END PUBLIC KEY-----
+      id: core-rest-client
+# Comment the below for docker images and containers
+logging:
+  file: logs/core-app.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework: INFO
+    org.tm.api: INFO
+    org.hibernate: INFO
+    springfox.documentation: WARN
+  root: INFO
+springdoc:
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    disable-swagger-default-url: false
+    enabled: true
+    path: /swagger.html
+    operationSorter: method
+    swagger: 3.0
